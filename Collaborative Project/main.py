@@ -84,7 +84,7 @@ message_icon = tk.Label(tab2, text="✉️", font=("Arial", 16))
 message_icon.grid(row=0, column=3)
 
 notebook = ttk.Notebook(tab2)
-notebook.grid(row=0, column=0, sticky="nsew")
+notebook.grid(row=0, column=0, sticky="nsew") # nhdagdaug8a
 
 # Create a Frame for the tab
 tab2 = ttk.Frame(notebook)
