@@ -68,6 +68,7 @@ tab1.grid_columnconfigure(1, weight=1)
 # List to keep references to the images so they are not garbage collected
 images = []
 current_row = 0
+
 def upload_file():
     global current_row
     f_types = [('Jpg Files', '*.jpg')]
@@ -90,14 +91,14 @@ tab2.grid_columnconfigure(0, weight=1)
 
 # Create a Frame for the timetable in tab2
 timetable_frame = ttk.Frame(tab2)
-timetable_frame.grid(row=1, column=0, sticky="nsew")
+timetable_frame.grid(row=0, column=0, sticky="nsew")
 
 # Define the columns and rows
 columns = ["Ant", "Barra", "Croc", "Dingo", "Eagle", "Frog"]
 rows = ["Period 1", "Period 2", "Recess", "Period 3", "Period 4", "Lunch", "Period 5", "Period 6"]
 
 # Define the starting row index
-start_row = 1
+start_row = 0
 
 # Create the labels for columns
 for i, col in enumerate(columns):
@@ -121,6 +122,64 @@ for i in range(len(columns) + 1):
 
 for i in range(len(rows) + 1):
     timetable_frame.grid_rowconfigure(i, weight=1)
+
+# Add a dropdown list for multiple student selection
+students_frame = ttk.Frame(tab2)
+students_frame.grid(row=1, column=0, sticky="nsew", pady=10)
+students_label = tk.Label(students_frame, text="Select Students:", font=('Arial', 12, 'bold'))
+students_label.pack(side="top", anchor="w")
+
+# Create a list of student names
+student_names = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown", "Charlie Black", "Diana Green"]
+
+# Frame to hold the dropdown menu
+dropdown_frame = tk.Frame(students_frame)
+dropdown_frame.pack(fill="x", expand=True)
+
+# Button to toggle the dropdown menu
+def toggle_menu():
+    if dropdown_frame.winfo_ismapped():
+        dropdown_frame.pack_forget()
+    else:
+        dropdown_frame.pack(fill="x", expand=True)
+
+dropdown_button = tk.Button(students_frame, text="Select Students", command=toggle_menu)
+dropdown_button.pack(fill="x")
+
+# Checkboxes for each student name
+selected_students = []
+
+def toggle_student(name):
+    if name in selected_students:
+        selected_students.remove(name)
+    else:
+        selected_students.append(name)
+
+for name in student_names:
+    var = tk.BooleanVar()
+    chk = tk.Checkbutton(dropdown_frame, text=name, variable=var, command=lambda n=name: toggle_student(n))
+    chk.pack(anchor="w")
+
+# Text widget to display selected students
+selected_students_label = tk.Label(students_frame, text="Selected Students:", font=('Arial', 12, 'bold'))
+selected_students_label.pack(anchor="w")
+selected_students_text = tk.Text(students_frame, height=5, state="disabled")
+selected_students_text.pack(fill="x", expand=True)
+
+# Button to show selected students
+def show_selected_students():
+    selected_students_text.config(state="normal")
+    selected_students_text.delete("1.0", tk.END)
+    for student in selected_students:
+        selected_students_text.insert(tk.END, f"{student}\n")
+    selected_students_text.config(state="disabled")
+
+enter_button = tk.Button(students_frame, text="Enter", command=show_selected_students)
+enter_button.pack(side="bottom", fill="x", expand=True)
+
+# Configure grid weights for students_frame
+tab2.grid_rowconfigure(1, weight=0)  # Ensure this row does not expand
+tab2.grid_columnconfigure(0, weight=1)
 
 # Run the main loop to keep the window open
 window.mainloop()
