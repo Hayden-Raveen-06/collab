@@ -9,13 +9,13 @@ def on_button_click(period, column):
 # Define window
 window = tk.Tk()
 window.title("Image Viewer with Scrollbar")
-window.geometry("800x600")  # Set initial size
+window.geometry("900x600")  # Set initial size
 
 # Tab creation
 tabcontrol = ttk.Notebook(window)
 tabcontrol.grid(row=0, column=0, sticky="nsew")
 
-tab1 = tk.Frame(tabcontrol)
+tab1 = tk.Frame(tabcontrol, padx=10, pady=10, borderwidth=1,)
 tab2 = tk.Frame(tabcontrol)
 
 tabcontrol.add(tab1, text="Tab 1")
@@ -30,25 +30,31 @@ tab1.grid_rowconfigure(1, weight=1)
 tab1.grid_columnconfigure(1, weight=1)
 
 # Top bar using .grid()
-profile_pic = tk.Label(tab1, text="", font=("Arial", 20))
-profile_pic.grid(row=0, column=0)
-username_label = tk.Label(tab1, text="@YourUsername", font=("Arial", 16))
-username_label.grid(row=0, column=1)
-search_bar = tk.Entry(tab1, width=30)
-search_bar.grid(row=0, column=2)
-message_icon = tk.Label(tab1, text="✉️", font=("Arial", 16))
-message_icon.grid(row=0, column=3)
+profile_frame = tk.Frame(tab1, padx=10, pady=10, borderwidth=1)
+profile_pic = tk.Label(profile_frame, text="Picture", font=("Arial", 20))
+profile_pic.grid(row=0, column=0, sticky="ew")
+username_label = tk.Label(profile_frame, text="@YourUsername", font=("Arial", 16))
+username_label.grid(row=0, column=1, sticky="ew")
+search_bar = tk.Entry(profile_frame, width=30)
+search_bar.grid(row=0, column=2,  sticky="ew")
+message_icon = tk.Label(profile_frame, text="✉️", font=("Arial", 16), )
+message_icon.grid(row=0, column=3,  sticky="ew")
+profile_frame.grid(row=0, column=0, sticky="ns")
 
-# Image upload section
-upload_button = tk.Button(tab1, text='Upload File', command=lambda: upload_file())
-upload_button.grid(row=1, column=0, sticky="ew")
-text = tk.Entry(tab1)
-text.grid(row=2, column=0, sticky="ew")
+# Image upload 
+bottom_frame = tk.Frame(tab1, padx=10, pady=10, borderwidth=1, )
+upload_button = tk.Button(bottom_frame, text='Upload File', command=lambda: upload_file(), width=10, )
+#upload_button.grid(row=0, column=2, sticky="nsew") # changed upload file to be near the text box - Dylan
+upload_button.grid(row=0, column=1, sticky="s")
+text = tk.Entry(bottom_frame, width=30,)
+text.grid(row=0, column=0, sticky="s")
+bottom_frame.grid(row=2, column=0,sticky="s", )
+
 
 # Scrollable Canvas
 canvas = Canvas(tab1)
 scrollbar = Scrollbar(tab1, orient="vertical", command=canvas.yview)
-scrollable_frame = tk.Frame(canvas)
+scrollable_frame = tk.Frame(canvas, padx=10 )
 
 scrollable_frame.bind(
     "<Configure>",
@@ -58,7 +64,7 @@ scrollable_frame.bind(
 )
 canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 canvas.configure(yscrollcommand=scrollbar.set)
-canvas.grid(row=1, column=1, columnspan=3, sticky="nsew")
+canvas.grid(row=1, column=0, columnspan=3, sticky="nsew")
 scrollbar.grid(row=1, column=4, sticky="ns")
 
 # Configure scrollable_frame to expand properly
@@ -74,16 +80,25 @@ def upload_file():
     f_types = [('Jpg Files', '*.jpg')]
     filename = filedialog.askopenfilename(filetypes=f_types)
     if filename:
+        post = tk.Frame(scrollable_frame)
+        textoutput = text.get()
+        username_label = tk.Label(post, text="@YourUsername  "+ textoutput)
+        username_label.grid(row=0, column=0, sticky="w")
         img = Image.open(filename)
         img_resized = img.resize((400, 200))  # new width & height
         img_tk = ImageTk.PhotoImage(img_resized)
         images.append(img_tk)  # Keep a reference to avoid garbage collection
-        button = tk.Button(scrollable_frame, image=img_tk)
-        textoutput = text.get()
-        label = tk.Label(scrollable_frame, text=textoutput)
-        label.grid(row=current_row, column=0)
+        button = tk.Button(post, image=img_tk)
+        
+        label.grid(row=2, column=0)
         button.grid(row=current_row+1, column=0)
-        current_row += 2
+        
+
+        post.grid(row=current_row, column=0, sticky="w")
+       #)
+        current_row += 1
+        
+        text.delete(0, len(textoutput) + 1) # Clearing text box after uploading image - Dylan
 
 # Configure tab2
 tab2.grid_rowconfigure(0, weight=1)
