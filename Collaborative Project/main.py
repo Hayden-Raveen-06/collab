@@ -2,12 +2,20 @@ import tkinter as tk
 from tkinter import filedialog, Canvas, Scrollbar, ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+import os
 
 def on_button_click(period, column):
     messagebox.showinfo("Button Clicked", f"You clicked on {period} in column {column}")
 
 # Define window
 window = tk.Tk()
+# Import the tcl file
+dir_path = os.path.dirname(os.path.realpath(__file__))
+window.tk.call('source', os.path.join(dir_path, 'forest-light.tcl'))
+ 
+
+# Set the theme with the theme_use method
+ttk.Style().theme_use('forest-light')
 window.title("Image Viewer with Scrollbar")
 window.geometry("900x600")  # Set initial size
 
@@ -15,7 +23,7 @@ window.geometry("900x600")  # Set initial size
 tabcontrol = ttk.Notebook(window)
 tabcontrol.grid(row=0, column=0, sticky="nsew")
 
-tab1 = tk.Frame(tabcontrol, padx=10, pady=10, borderwidth=1,)
+tab1 = tk.Frame(tabcontrol,  ) #padx=10, pady=10,
 tab2 = tk.Frame(tabcontrol)
 
 tabcontrol.add(tab1, text="Tab 1")
@@ -30,31 +38,30 @@ tab1.grid_rowconfigure(1, weight=1)
 tab1.grid_columnconfigure(1, weight=1)
 
 # Top bar using .grid()
-profile_frame = tk.Frame(tab1, padx=10, pady=10, borderwidth=1)
-profile_pic = tk.Label(profile_frame, text="Picture", font=("Arial", 20))
+profile_frame = ttk.Frame(tab1,  borderwidth=1)
+profile_pic = ttk.Label(profile_frame, text="Picture", font=("Arial", 20))# padx=10, pady=10,
 profile_pic.grid(row=0, column=0, sticky="ew")
-username_label = tk.Label(profile_frame, text="@YourUsername", font=("Arial", 16))
+username_label = ttk.Label(profile_frame, text="@YourUsername", font=("Arial", 16))
 username_label.grid(row=0, column=1, sticky="ew")
-search_bar = tk.Entry(profile_frame, width=30)
+search_bar = ttk.Entry(profile_frame, width=30)
 search_bar.grid(row=0, column=2,  sticky="ew")
-message_icon = tk.Label(profile_frame, text="✉️", font=("Arial", 16), )
+message_icon = ttk.Label(profile_frame, text="✉️", font=("Arial", 16), )
 message_icon.grid(row=0, column=3,  sticky="ew")
 profile_frame.grid(row=0, column=0, sticky="ns")
 
 # Image upload 
-bottom_frame = tk.Frame(tab1, padx=10, pady=10, borderwidth=1, )
-upload_button = tk.Button(bottom_frame, text='Upload File', command=lambda: upload_file(), width=10, )
+bottom_frame = ttk.Frame(tab1,   )#padx=10, pady=10
+upload_button = ttk.Button(bottom_frame, text='Upload File', command=lambda: upload_file(), width=10, )
 #upload_button.grid(row=0, column=2, sticky="nsew") # changed upload file to be near the text box - Dylan
 upload_button.grid(row=0, column=1, sticky="s")
-text = tk.Entry(bottom_frame, width=30,)
+text = ttk.Entry(bottom_frame, width=30,)
 text.grid(row=0, column=0, sticky="s")
 bottom_frame.grid(row=2, column=0,sticky="s", )
-
 
 # Scrollable Canvas
 canvas = Canvas(tab1)
 scrollbar = Scrollbar(tab1, orient="vertical", command=canvas.yview)
-scrollable_frame = tk.Frame(canvas, padx=10 )
+scrollable_frame = ttk.Frame(canvas,) # padx=10 
 
 scrollable_frame.bind(
     "<Configure>",
@@ -80,7 +87,7 @@ def upload_file():
     f_types = [('Jpg Files', '*.jpg')]
     filename = filedialog.askopenfilename(filetypes=f_types)
     if filename:
-        post = tk.Frame(scrollable_frame)
+        post = ttk.Frame(scrollable_frame)
         textoutput = text.get()
         username_label = tk.Label(post, text="@YourUsername  "+ textoutput)
         username_label.grid(row=0, column=0, sticky="w")
@@ -88,7 +95,7 @@ def upload_file():
         img_resized = img.resize((400, 200))  # new width & height
         img_tk = ImageTk.PhotoImage(img_resized)
         images.append(img_tk)  # Keep a reference to avoid garbage collection
-        button = tk.Button(post, image=img_tk)
+        button = ttk.Button(post, image=img_tk)
         
         label.grid(row=2, column=0)
         button.grid(row=current_row+1, column=0)
@@ -117,18 +124,18 @@ start_row = 0
 
 # Create the labels for columns
 for i, col in enumerate(columns):
-    label = tk.Label(timetable_frame, text=col, font=('Arial', 12, 'bold'), borderwidth=1, relief="solid")
+    label = ttk.Label(timetable_frame, text=col, font=('Arial', 12, 'bold'), padding=1 )
     label.grid(row=start_row, column=i+1, sticky="nsew", padx=1, pady=1)
 
 # Create the labels for rows
 for i, row in enumerate(rows):
-    label = tk.Label(timetable_frame, text=row, font=('Arial', 12, 'bold'), borderwidth=1, relief="solid")
+    label = ttk.Label(timetable_frame, text=row, font=('Arial', 12, 'bold'),  padding=1)
     label.grid(row=start_row + i + 1, column=0, sticky="nsew", padx=1, pady=1)
 
 # Create the buttons in the grid
 for i, row in enumerate(rows):
     for j, col in enumerate(columns):
-        button = tk.Button(timetable_frame, text=row, command=lambda r=row, c=col: on_button_click(r, c), borderwidth=1, relief="solid")
+        button = ttk.Button(timetable_frame, text=row, command=lambda r=row, c=col: on_button_click(r, c),  )
         button.grid(row=start_row + i + 1, column=j+1, sticky="nsew", padx=1, pady=1)
 
 # Configure grid weights for timetable_frame
@@ -141,14 +148,14 @@ for i in range(len(rows) + 1):
 # Add a dropdown list for multiple student selection
 students_frame = ttk.Frame(tab2)
 students_frame.grid(row=1, column=0, sticky="nsew", pady=10)
-students_label = tk.Label(students_frame, text="Select Students:", font=('Arial', 12, 'bold'))
+students_label = ttk.Label(students_frame, text="Select Students:", font=('Arial', 12, 'bold'))
 students_label.pack(side="top", anchor="w")
 
 # Create a list of student names
 student_names = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown", "Charlie Black", "Diana Green"]
 
 # Frame to hold the dropdown menu
-dropdown_frame = tk.Frame(students_frame)
+dropdown_frame = ttk.Frame(students_frame)
 dropdown_frame.pack(fill="x", expand=True)
 
 # Button to toggle the dropdown menu
@@ -158,7 +165,7 @@ def toggle_menu():
     else:
         dropdown_frame.pack(fill="x", expand=True)
 
-dropdown_button = tk.Button(students_frame, text="Select Students", command=toggle_menu)
+dropdown_button = ttk.Button(students_frame, text="Select Students", command=toggle_menu)
 dropdown_button.pack(fill="x")
 
 # Checkboxes for each student name
@@ -176,7 +183,7 @@ for name in student_names:
     chk.pack(anchor="w")
 
 # Text widget to display selected students
-selected_students_label = tk.Label(students_frame, text="Selected Students:", font=('Arial', 12, 'bold'))
+selected_students_label = ttk.Label(students_frame, text="Selected Students:", font=('Arial', 12, 'bold'))
 selected_students_label.pack(anchor="w")
 selected_students_text = tk.Text(students_frame, height=5, state="disabled")
 selected_students_text.pack(fill="x", expand=True)
@@ -189,7 +196,7 @@ def show_selected_students():
         selected_students_text.insert(tk.END, f"{student}\n")
     selected_students_text.config(state="disabled")
 
-enter_button = tk.Button(students_frame, text="Enter", command=show_selected_students)
+enter_button = ttk.Button(students_frame, text="Enter", command=show_selected_students)
 enter_button.pack(side="bottom", fill="x", expand=True)
 
 # Configure grid weights for students_frame
