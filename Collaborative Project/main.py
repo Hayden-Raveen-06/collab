@@ -25,9 +25,11 @@ tabcontrol.grid(row=0, column=0, sticky="nsew")
 
 tab1 = ttk.Frame(tabcontrol,  ) #padx=10, pady=10,
 tab2 = ttk.Frame(tabcontrol)
+tab3 = ttk.Frame(tabcontrol, padding=15)
 
 tabcontrol.add(tab1, text="Tab 1")
 tabcontrol.add(tab2, text="✉️")
+tabcontrol.add(tab3, text="Requests")
 
 # Configure the main window grid to expand properly
 window.grid_rowconfigure(0, weight=1)
@@ -235,6 +237,7 @@ def enter_pressed(event):
 
 # Configure the text widget to call enter_pressed function when Enter key is pressed
 selected_students_text.bind("<KeyPress>", enter_pressed)
+
 
 # Run the main loop to keep the window open
 window.mainloop()
