@@ -278,6 +278,46 @@ tab3_canvas.grid(row=0, column=0, columnspan=3, sticky="nsew")
 tab3_scrollbar.grid(row=0, column=1, sticky="ns")
 main_tab3_frame.pack()
 
+# Configue tab3
+tab3.grid_rowconfigure(0, weight=1)
+tab3.grid_columnconfigure(0, weight=1)
+
+# Create widgets for tab3 header frame
+header_frame = ttk.Frame(tab3, )
+tab3_label = ttk.Label(header_frame, text="Requests", font=('Arial', 24, ))
+member_count_frame = ttk.Frame(header_frame, borderwidth=0.5, relief=tk.SOLID, padding=5, width=30, height=10)
+member_count_text_label = ttk.Label(member_count_frame, text="Gym: ", font=('Arial', 15, ),  )
+member_count_label = ttk.Label(member_count_frame, text="10", font=('Arial', 15, ), )
+
+# Display all created widgets
+header_frame.pack(fill=tk.X, ) #grid(row=0, column=0, sticky="nsew")
+tab3_label.pack(side=tk.LEFT, fill=tk.Y)
+member_count_frame.pack(side=tk.RIGHT,  fill=tk.Y)
+member_count_text_label.grid(row=0, column=0, sticky="nsew")    
+member_count_label.grid(row=0, column=1, sticky="nsew")
+
+# Main tab3 frame
+main_tab3_frame = ttk.Frame(tab3, padding=15)
+
+# Scrollable Canvas
+tab3_canvas = Canvas(main_tab3_frame)
+tab3_scrollbar = Scrollbar(main_tab3_frame, orient="vertical", command=canvas.yview)
+tab3_scrollable_frame = ttk.Frame(tab3_canvas, padding=10) # padx=10 
+
+scrollable_frame.bind(
+    "<Configure>",
+    lambda e: canvas.configure(
+        scrollregion=canvas.bbox("all")
+    )
+)
+
+#   Displaying tab3 frame widgets
+tab3_canvas.create_window((0, 0), window=tab3_scrollable_frame, anchor="w")
+tab3_canvas.configure(yscrollcommand=scrollbar.set)
+tab3_canvas.grid(row=0, column=0, columnspan=3, sticky="nsew")
+tab3_scrollbar.grid(row=0, column=1, sticky="ns")
+main_tab3_frame.pack()
+
 
 # Run the main loop to keep the window open
 window.mainloop()
