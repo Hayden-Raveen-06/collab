@@ -2,12 +2,20 @@ import tkinter as tk
 from tkinter import filedialog, Canvas, Scrollbar, ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+import os
 
 def on_button_click(period, column):
     messagebox.showinfo("Button Clicked", f"You clicked on {period} in column {column}")
 
 # Define window
 window = tk.Tk()
+# Import the tcl file
+dir_path = os.path.dirname(os.path.realpath(__file__))
+window.tk.call('source', os.path.join(dir_path, 'forest-light.tcl'))
+ 
+
+# Set the theme with the theme_use method
+ttk.Style().theme_use('forest-light')
 window.title("Image Viewer with Scrollbar")
 window.geometry("900x600")  # Set initial size
 
@@ -15,8 +23,8 @@ window.geometry("900x600")  # Set initial size
 tabcontrol = ttk.Notebook(window)
 tabcontrol.grid(row=0, column=0, sticky="nsew")
 
-tab1 = tk.Frame(tabcontrol, padx=10, pady=10, borderwidth=1,)
-tab2 = tk.Frame(tabcontrol)
+tab1 = ttk.Frame(tabcontrol,  ) #padx=10, pady=10,
+tab2 = ttk.Frame(tabcontrol)
 
 tabcontrol.add(tab1, text="Tab 1")
 tabcontrol.add(tab2, text="✉️")
@@ -30,31 +38,26 @@ tab1.grid_rowconfigure(1, weight=1)
 tab1.grid_columnconfigure(1, weight=1)
 
 # Top bar using .grid()
-profile_frame = tk.Frame(tab1, padx=10, pady=10, borderwidth=1)
-profile_pic = tk.Label(profile_frame, text="Picture", font=("Arial", 20))
+profile_frame = ttk.Frame(tab1,  borderwidth=1)
+profile_pic = ttk.Label(profile_frame, text="Picture", font=("Arial", 20))# padx=10, pady=10,
 profile_pic.grid(row=0, column=0, sticky="ew")
-username_label = tk.Label(profile_frame, text="@YourUsername", font=("Arial", 16))
+username_label = ttk.Label(profile_frame, text="@YourUsername", font=("Arial", 16))
 username_label.grid(row=0, column=1, sticky="ew")
-search_bar = tk.Entry(profile_frame, width=30)
-search_bar.grid(row=0, column=2,  sticky="ew")
-message_icon = tk.Label(profile_frame, text="✉️", font=("Arial", 16), )
-message_icon.grid(row=0, column=3,  sticky="ew")
 profile_frame.grid(row=0, column=0, sticky="ns")
 
 # Image upload 
-bottom_frame = tk.Frame(tab1, padx=10, pady=10, borderwidth=1, )
-upload_button = tk.Button(bottom_frame, text='Upload File', command=lambda: upload_file(), width=10, )
+bottom_frame = ttk.Frame(tab1,   )#padx=10, pady=10
+upload_button = ttk.Button(bottom_frame, text='Upload File', command=lambda: upload_file(), width=10, )
 #upload_button.grid(row=0, column=2, sticky="nsew") # changed upload file to be near the text box - Dylan
 upload_button.grid(row=0, column=1, sticky="s")
-text = tk.Entry(bottom_frame, width=30,)
+text = ttk.Entry(bottom_frame, width=30,)
 text.grid(row=0, column=0, sticky="s")
 bottom_frame.grid(row=2, column=0,sticky="s", )
-
 
 # Scrollable Canvas
 canvas = Canvas(tab1)
 scrollbar = Scrollbar(tab1, orient="vertical", command=canvas.yview)
-scrollable_frame = tk.Frame(canvas, padx=10 )
+scrollable_frame = ttk.Frame(canvas,) # padx=10 
 
 scrollable_frame.bind(
     "<Configure>",
@@ -80,7 +83,7 @@ def upload_file():
     f_types = [('Jpg Files', '*.jpg')]
     filename = filedialog.askopenfilename(filetypes=f_types)
     if filename:
-        post = tk.Frame(scrollable_frame)
+        post = ttk.Frame(scrollable_frame)
         textoutput = text.get()
         username_label = tk.Label(post, text="@YourUsername  "+ textoutput)
         username_label.grid(row=0, column=0, sticky="w")
@@ -88,7 +91,7 @@ def upload_file():
         img_resized = img.resize((400, 200))  # new width & height
         img_tk = ImageTk.PhotoImage(img_resized)
         images.append(img_tk)  # Keep a reference to avoid garbage collection
-        button = tk.Button(post, image=img_tk)
+        button = ttk.Button(post, image=img_tk)
         
         label.grid(row=2, column=0)
         button.grid(row=current_row+1, column=0)
@@ -124,6 +127,15 @@ for i, col in enumerate(columns):
 for i, row in enumerate(rows):
     label = tk.Label(timetable_frame, text=row, font=('Arial', 12, 'bold'), borderwidth=1, relief="solid")
     label.grid(row=start_row + i + 1, column=0, sticky="nsew", padx=1, pady=1)
+
+# Dictionary to store selections
+selections = {}
+
+# Function to handle button clicks and store selections
+def on_button_click(period, column):
+    selections[column] = period
+    print(selections)  # For debugging, you can see the saved selections in the console
+    print(selected_students)
 
 # Create the buttons in the grid
 for i, row in enumerate(rows):
@@ -195,6 +207,34 @@ enter_button.pack(side="bottom", fill="x", expand=True)
 # Configure grid weights for students_frame
 tab2.grid_rowconfigure(1, weight=0)  # Ensure this row does not expand
 tab2.grid_columnconfigure(0, weight=1)
+
+# Dictionary to store selected students
+selected_students_dict = {}
+
+# Function to update the selected students dictionary with the names from the list
+def update_selected_students():
+    global selected_students_dict
+    selected_students_dict.clear()  # Clear the dictionary before updating
+    for student in selected_students:
+        selected_students_dict[student] = True
+
+# Function to toggle student selection
+def toggle_student(name):
+    global selected_students
+    if name in selected_students:
+        selected_students.remove(name)
+    else:
+        selected_students.append(name)
+
+# Function to update the dictionary when Enter key is pressed in the text widget
+def enter_pressed(event):
+    if event.keysym == "Return":
+        update_selected_students()
+        print("Selected Students Dictionary:")
+        print(selected_students_dict)
+
+# Configure the text widget to call enter_pressed function when Enter key is pressed
+selected_students_text.bind("<KeyPress>", enter_pressed)
 
 # Run the main loop to keep the window open
 window.mainloop()
