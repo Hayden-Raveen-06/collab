@@ -25,8 +25,7 @@ tabcontrol.grid(row=0, column=0, sticky="nsew")
 
 tab1 = ttk.Frame(tabcontrol,  ) #padx=10, pady=10,
 tab2 = ttk.Frame(tabcontrol)
-tab3 = ttk.Frame(tabcontrol, padding=10)
-
+tab3 = ttk.Frame(tabcontrol, padding=15)
 
 tabcontrol.add(tab1, text="Tab 1")
 tabcontrol.add(tab2, text="✉️")
@@ -46,10 +45,6 @@ profile_pic = ttk.Label(profile_frame, text="Picture", font=("Arial", 20))# padx
 profile_pic.grid(row=0, column=0, sticky="ew")
 username_label = ttk.Label(profile_frame, text="@YourUsername", font=("Arial", 16))
 username_label.grid(row=0, column=1, sticky="ew")
-search_bar = ttk.Entry(profile_frame, width=30)
-search_bar.grid(row=0, column=2,  sticky="ew")
-message_icon = ttk.Label(profile_frame, text="✉️", font=("Arial", 16), )
-message_icon.grid(row=0, column=3,  sticky="ew")
 profile_frame.grid(row=0, column=0, sticky="ns")
 
 # Image upload 
@@ -127,18 +122,27 @@ start_row = 0
 
 # Create the labels for columns
 for i, col in enumerate(columns):
-    label = ttk.Label(timetable_frame, text=col, font=('Arial', 12, 'bold'), padding=1 )
+    label = tk.Label(timetable_frame, text=col, font=('Arial', 12, 'bold'), borderwidth=1, relief="solid")
     label.grid(row=start_row, column=i+1, sticky="nsew", padx=1, pady=1)
 
 # Create the labels for rows
 for i, row in enumerate(rows):
-    label = ttk.Label(timetable_frame, text=row, font=('Arial', 12, 'bold'),  padding=1)
+    label = tk.Label(timetable_frame, text=row, font=('Arial', 12, 'bold'), borderwidth=1, relief="solid")
     label.grid(row=start_row + i + 1, column=0, sticky="nsew", padx=1, pady=1)
+
+# Dictionary to store selections
+selections = {}
+
+# Function to handle button clicks and store selections
+def on_button_click(period, column):
+    selections[column] = period
+    print(selections)  # For debugging, you can see the saved selections in the console
+    print(selected_students)
 
 # Create the buttons in the grid
 for i, row in enumerate(rows):
     for j, col in enumerate(columns):
-        button = ttk.Button(timetable_frame, text=row, command=lambda r=row, c=col: on_button_click(r, c),  )
+        button = tk.Button(timetable_frame, text=row, command=lambda r=row, c=col: on_button_click(r, c), borderwidth=1, relief="solid")
         button.grid(row=start_row + i + 1, column=j+1, sticky="nsew", padx=1, pady=1)
 
 # Configure grid weights for timetable_frame
@@ -151,14 +155,14 @@ for i in range(len(rows) + 1):
 # Add a dropdown list for multiple student selection
 students_frame = ttk.Frame(tab2)
 students_frame.grid(row=1, column=0, sticky="nsew", pady=10)
-students_label = ttk.Label(students_frame, text="Select Students:", font=('Arial', 12, 'bold'))
+students_label = tk.Label(students_frame, text="Select Students:", font=('Arial', 12, 'bold'))
 students_label.pack(side="top", anchor="w")
 
 # Create a list of student names
 student_names = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown", "Charlie Black", "Diana Green"]
 
 # Frame to hold the dropdown menu
-dropdown_frame = ttk.Frame(students_frame)
+dropdown_frame = tk.Frame(students_frame)
 dropdown_frame.pack(fill="x", expand=True)
 
 # Button to toggle the dropdown menu
@@ -168,7 +172,7 @@ def toggle_menu():
     else:
         dropdown_frame.pack(fill="x", expand=True)
 
-dropdown_button = ttk.Button(students_frame, text="Select Students", command=toggle_menu)
+dropdown_button = tk.Button(students_frame, text="Select Students", command=toggle_menu)
 dropdown_button.pack(fill="x")
 
 # Checkboxes for each student name
@@ -186,7 +190,7 @@ for name in student_names:
     chk.pack(anchor="w")
 
 # Text widget to display selected students
-selected_students_label = ttk.Label(students_frame, text="Selected Students:", font=('Arial', 12, 'bold'))
+selected_students_label = tk.Label(students_frame, text="Selected Students:", font=('Arial', 12, 'bold'))
 selected_students_label.pack(anchor="w")
 selected_students_text = tk.Text(students_frame, height=5, state="disabled")
 selected_students_text.pack(fill="x", expand=True)
@@ -199,12 +203,41 @@ def show_selected_students():
         selected_students_text.insert(tk.END, f"{student}\n")
     selected_students_text.config(state="disabled")
 
-enter_button = ttk.Button(students_frame, text="Enter", command=show_selected_students)
+enter_button = tk.Button(students_frame, text="Enter", command=show_selected_students)
 enter_button.pack(side="bottom", fill="x", expand=True)
 
 # Configure grid weights for students_frame
 tab2.grid_rowconfigure(1, weight=0)  # Ensure this row does not expand
 tab2.grid_columnconfigure(0, weight=1)
+
+# Dictionary to store selected students
+selected_students_dict = {}
+
+# Function to update the selected students dictionary with the names from the list
+def update_selected_students():
+    global selected_students_dict
+    selected_students_dict.clear()  # Clear the dictionary before updating
+    for student in selected_students:
+        selected_students_dict[student] = True
+
+# Function to toggle student selection
+def toggle_student(name):
+    global selected_students
+    if name in selected_students:
+        selected_students.remove(name)
+    else:
+        selected_students.append(name)
+
+# Function to update the dictionary when Enter key is pressed in the text widget
+def enter_pressed(event):
+    if event.keysym == "Return":
+        update_selected_students()
+        print("Selected Students Dictionary:")
+        print(selected_students_dict)
+
+# Configure the text widget to call enter_pressed function when Enter key is pressed
+selected_students_text.bind("<KeyPress>", enter_pressed)
+
 
 # Configue tab3
 tab3.grid_rowconfigure(0, weight=1)
@@ -240,7 +273,6 @@ scrollable_frame.bind(
 )
 
 #   Displaying tab3 frame widgets
-
 tab3_canvas.create_window((0, 0), window=tab3_scrollable_frame, anchor="w")
 tab3_canvas.configure(yscrollcommand=scrollbar.set)
 tab3_canvas.grid(row=0, column=0, columnspan=3, sticky="nsew")
