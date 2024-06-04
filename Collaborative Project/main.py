@@ -23,8 +23,8 @@ window.geometry("900x600")  # Set initial size
 tabcontrol = ttk.Notebook(window)
 tabcontrol.grid(row=0, column=0, sticky="nsew")
 
-tab1 = tk.Frame(tabcontrol,  ) #padx=10, pady=10,
-tab2 = tk.Frame(tabcontrol)
+tab1 = ttk.Frame(tabcontrol,  ) #padx=10, pady=10,
+tab2 = ttk.Frame(tabcontrol)
 
 tabcontrol.add(tab1, text="Tab 1")
 tabcontrol.add(tab2, text="✉️")
