@@ -7,6 +7,7 @@ import os
 # Global variables
 requests = []
 notifications = []
+gym_member_count = 0
 
 def on_button_click(period, column):
     messagebox.showinfo("Button Clicked", f"You clicked on {period} in column {column}")
@@ -31,7 +32,7 @@ tab1 = ttk.Frame(tabcontrol,  ) #padx=10, pady=10,
 tab2 = ttk.Frame(tabcontrol)
 tab3 = ttk.Frame(tabcontrol, padding=15)
 
-tabcontrol.add(tab1, text="Tab 1")
+tabcontrol.add(tab1, text="Home")
 tabcontrol.add(tab2, text="✉️")
 tabcontrol.add(tab3, text="Requests")
 
@@ -44,26 +45,35 @@ tab1.grid_rowconfigure(1, weight=1)
 tab1.grid_columnconfigure(1, weight=1)
 
 # Top bar using .grid()
-profile_frame = ttk.Frame(tab1,  borderwidth=1)
-profile_pic = ttk.Label(profile_frame, text="Picture", font=("Arial", 20))# padx=10, pady=10,
-profile_pic.grid(row=0, column=0, sticky="ew")
-username_label = ttk.Label(profile_frame, text="@YourUsername", font=("Arial", 16))
-username_label.grid(row=0, column=1, sticky="ew")
+profile_frame = ttk.Frame(tab1,  borderwidth=1, padding=5)
+img = Image.open(os.path.join(dir_path, 'profile_picture.png'))
+img_resized = img.resize((25, 25))  # new width & height
+img_tk = ImageTk.PhotoImage(img_resized)
+button = ttk.Button(profile_frame, image=img_tk)
+button.pack(fill=tk.BOTH, side=tk.LEFT, padx=5)
+
+username_label = ttk.Label(profile_frame, text="@hayden", font=("Arial", 15))
+username_label.pack(fill=tk.BOTH, side=tk.LEFT, )
+
+join_button = ttk.Button(profile_frame, text="Join", command=lambda: messagebox.showinfo("Join", "You have joined the gym!"))
+join_button.pack(fill=tk.BOTH, padx=5)
+
 profile_frame.grid(row=0, column=0, sticky="ns")
 
 # Image upload 
-bottom_frame = ttk.Frame(tab1,   )#padx=10, pady=10
-upload_button = ttk.Button(bottom_frame, text='Upload File', command=lambda: upload_file(), width=10, )
-#upload_button.grid(row=0, column=2, sticky="nsew") # changed upload file to be near the text box - Dylan
-upload_button.grid(row=0, column=1, sticky="s")
-text = ttk.Entry(bottom_frame, width=30,)
-text.grid(row=0, column=0, sticky="s")
-bottom_frame.grid(row=2, column=0,sticky="s", )
+bottom_frame = ttk.Frame(tab1, padding=10, relief=tk.SUNKEN,) #padx=10, pady=10
+upload_button = ttk.Button(bottom_frame, text='Upload File', command=lambda: upload_file(),  )
+upload_button.pack(fill=tk.BOTH, side=tk.LEFT, ) 
+text = ttk.Entry(bottom_frame,  width=70,)
+text.pack(fill=tk.BOTH,side=tk.LEFT,  expand=True,)
+send_button = ttk.Button(bottom_frame, text='Send', command=lambda: upload_file(),  )
+send_button.pack(fill=tk.BOTH, side=tk.LEFT,) 
+bottom_frame.grid(row=2, column=0, sticky="nsew", columnspan=3, )  # Modify this line to expand the frame to the end of the screen
 
 # Scrollable Canvas
 canvas = Canvas(tab1)
 scrollbar = Scrollbar(tab1, orient="vertical", command=canvas.yview)
-scrollable_frame = ttk.Frame(canvas,) # padx=10 
+scrollable_frame = ttk.Frame(canvas, padding=10) # padx=10 
 
 scrollable_frame.bind(
     "<Configure>",
@@ -88,6 +98,7 @@ def upload_file():
     global current_row
     f_types = [('Jpg Files', '*.jpg')]
     filename = filedialog.askopenfilename(filetypes=f_types)
+    print(filename)
     if filename:
         post = ttk.Frame(scrollable_frame)
         textoutput = text.get()
@@ -102,9 +113,7 @@ def upload_file():
         label.grid(row=2, column=0)
         button.grid(row=current_row+1, column=0)
         
-
         post.grid(row=current_row, column=0, sticky="w")
-       #)
         current_row += 1
         
         text.delete(0, len(textoutput) + 1) # Clearing text box after uploading image - Dylan
@@ -147,8 +156,9 @@ def on_button_click(period, column):
 # Create the buttons in the grid
 for i, row in enumerate(rows):
     for j, col in enumerate(columns):
-        button = tk.Button(timetable_frame, text=row, command=lambda r=row, c=col: on_button_click(r, c), borderwidth=1, relief="solid")
+        button = tk.Button(timetable_frame, text=row, command=lambda r=row, c=col: on_button_click(r, c), borderwidth=1, relief="solid", bg="green")
         button.grid(row=start_row + i + 1, column=j+1, sticky="nsew", padx=1, pady=1)
+
 
 # Configure grid weights for timetable_frame
 for i in range(len(columns) + 1):
@@ -209,7 +219,12 @@ def show_selected_students():
     selected_students_text.config(state="disabled")
     requests.append({"students": selected_students, "times": selections})
 
-enter_button = tk.Button(students_frame, text="Enter", command=show_selected_students)
+    # Reset Values
+    selections = {}
+    selected_students = []
+    
+
+enter_button = tk.Button(students_frame, text="Send Request", command=show_selected_students)
 enter_button.pack(side="bottom", fill="x", expand=True)
 
 # Configure grid weights for students_frame
@@ -255,14 +270,14 @@ def accept_request(index):
     requests_frame_array.pop(index)
     notifications.append(requests[index])
     requests.pop(index)
-    update_requests()
+
 
 def decline_request(index):
     requests_frame_array[index].destroy()
     requests_frame_array.pop(index)
 
     requests.pop(index)
-    update_requests()
+
 
 def update_requests(): 
 
