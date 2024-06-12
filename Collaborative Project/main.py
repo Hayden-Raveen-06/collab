@@ -162,14 +162,43 @@ timetable_frame = ttk.Frame(tab2)
 timetable_frame.grid(row=0, column=0, sticky="nsew")
 
 # Dictionary to store selections
-selections = {}
+selections = []
+buttons_array = []
 
 # Function to handle button clicks and store selections
-def on_button_click(period, column):
-    selections[column] = period
-    #print(selections)  # For debugging, you can see the saved selections in the console
+def on_button_click(period, column, row_num, column_num): 
+    # row 1 column 1
+
+    index = 0
+    if row_num > 0:
+        index = row_num * 6 + column_num 
+        if buttons_array[index]["bg"] == "green":
+            buttons_array[index].config(bg="white")
+        else:   
+            buttons_array[index].config(bg="green")
+        
+    else:
+        index = row_num + column_num
+        if buttons_array[index]["bg"] == "green":
+            buttons_array[index].config(bg="white")
+        else:   
+            buttons_array[index].config(bg="green")
+   
+    global selections
+    found = False
+    for selection in selections:
+        if selection["row"] == period and selection["column"] == column:
+            found = selection
+    if not found:
+        selections.append({"row": period, "column": column})
+    else:
+        selections = [item for item in selections if item["row"] != period or item["column"] != column]
+
 
 def setup_timetable():
+    global buttons_array
+    buttons_array = []
+
         # Define the columns and rows
     columns = ["Ant", "Barra", "Croc", "Dingo", "Eagle", "Frog"]
     rows = ["Period 1", "Period 2", "Recess", "Period 3", "Period 4", "Lunch", "Period 5", "Period 6"]
@@ -187,21 +216,28 @@ def setup_timetable():
         label = tk.Label(timetable_frame, text=row, font=('Arial', 12, 'bold'), borderwidth=1, relief="solid")
         label.grid(row=start_row + i + 1, column=0, sticky="nsew", padx=1, pady=1)
 
-    
+
+
+
     # Create the buttons in the grid
     for i, row in enumerate(rows):
         for j, col in enumerate(columns):
             if len(chosen_days) != 0:
-                for selected in chosen_days:
-                    if col in selected["times"] and selected["times"][col] == row:
+                for selected in chosen_days: 
+                    if selected["row"] == row and selected["column"] == col:
                         button = tk.Button(timetable_frame, text=row, command=lambda: messagebox.showinfo("Taken", "This spot is already taken please chose another one."), borderwidth=1, relief="solid", bg="red")
                         button.grid(row=start_row + i + 1, column=j+1, sticky="nsew", padx=1, pady=1)
+                        buttons_array.append(button)
+                        break
                     else:
-                        button = tk.Button(timetable_frame, text=row, command=lambda r=row, c=col: on_button_click(r, c, button), borderwidth=1, relief="solid",  )
+                        button = tk.Button(timetable_frame, text=row, command=lambda r=row, c=col, i=i, j=j: on_button_click(r, c, i, j), borderwidth=1, relief="solid",  )
                         button.grid(row=start_row + i + 1, column=j+1, sticky="nsew", padx=1, pady=1)
-            else:
-                button = tk.Button(timetable_frame, text=row, command=lambda r=row, c=col: on_button_click(r, c), borderwidth=1, relief="solid",  )
+                        buttons_array.append(button)
+
+            else:          
+                button = tk.Button(timetable_frame, text=row, command=lambda r=row, c=col, i=i, j=j: on_button_click(r, c, i, j), borderwidth=1, relief="solid",  )
                 button.grid(row=start_row + i + 1, column=j+1, sticky="nsew", padx=1, pady=1)
+                buttons_array.append(button)
 
         # Configure grid weights for timetable_frame
     for i in range(len(columns) + 1):
@@ -245,18 +281,20 @@ def toggle_student(name):
     else:
         selected_students.append(name)
 
+checkbox_array = []
 for name in student_names:
     var = tk.BooleanVar()
     chk = tk.Checkbutton(students_frame, text=name, variable=var, command=lambda n=name: toggle_student(n))
+    checkbox_array.append(var)
     chk.pack(anchor="w")
 
 
 
 # Button to show selected students
 def send_request():
-    
+    global selected_students, selections
     requests.append({"students": selected_students, "times": selections})
-
+    
     update_requests()
 
     # Reset Values
@@ -265,8 +303,12 @@ def send_request():
         widget.destroy()
     
     setup_timetable()
-    # selections = {}
-    # selected_students = []
+    selections = []
+    for chk in checkbox_array:
+        chk.set(0)
+
+
+    selected_students = []
     
 
 enter_button = tk.Button(students_frame, text="Send Request", command=send_request)
@@ -278,6 +320,7 @@ tab2.grid_columnconfigure(0, weight=1)
 
 # Dictionary to store selected students
 selected_students_dict = {}
+
 
 # Function to update the selected students dictionary with the names from the list
 def update_selected_students():
@@ -318,16 +361,21 @@ def accept_request(index):
     for name in chosen_request["students"]:
         name_text = name_text + name + ", "
 
-    for time in chosen_request["times"].items():
-            times_text = times_text + f"{time[0]}: {time[1]}, "
+    for time in chosen_request["times"]:
+            times_text = times_text + f"{time['column']}: {time['row']}, "
 
     requests_frame_array[index].destroy()
     requests_frame_array.pop(index)
-    chosen_days.append(requests[index])
+
+    for day in requests[index]["times"]: 
+        chosen_days.append({"row": day["row"], "column": day["column"]})
+
    
     requests.pop(index)
 
     update_requests()
+    setup_timetable()
+    print(chosen_days)
     tk.messagebox.showinfo("Request Accepted", f"{name_text}have been approved for the gym at {times_text}",)
 
 
@@ -372,8 +420,8 @@ def update_requests():
         times_label = ttk.Label(info_frame, text=f"Times: ")
         msg_label = ttk.Label(info_frame, text="Message: Please leave the door open ", width=70)
 
-        for time in requests[i]["times"].items():
-            times_label["text"] = times_label["text"] + f"{time[0]}: {time[1]}, "
+        for time in requests[i]["times"]:
+            times_label["text"] = times_label["text"] + f"{time['column']}: {time['row']}, "
 
         times_label.pack(fill=tk.BOTH)
         msg_label.pack(fill=tk.BOTH)
